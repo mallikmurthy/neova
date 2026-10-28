@@ -1,0 +1,1769 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Package, 
+  DollarSign, 
+  Users, 
+  ShieldCheck, 
+  PlusCircle, 
+  ShoppingBag, 
+  Calendar, 
+  TrendingUp, 
+  TrendingDown, 
+  CheckCircle2, 
+  RotateCcw, 
+  Trash2, 
+  Lock, 
+  LogOut, 
+  Eye, 
+  Filter, 
+  Download, 
+  Search, 
+  Sparkles,
+  ChevronRight,
+  UserPlus,
+  ArrowUpRight,
+  Clock,
+  Layers,
+  Heart
+} from 'lucide-react';
+
+// --- INITIAL MOCK DATA ---
+const INITIAL_PRODUCTS = [
+  {
+    id: 'yarn-001',
+    title: 'Merino Wool Chunky Knit Cardigan',
+    category: 'Wearables',
+    fiber: '100% Merino Wool (Superwash)',
+    price: 3490,
+    stock: 6,
+    imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=700&q=80',
+    description: 'Cloud-soft chunky cardigan hand-knitted with ethically sourced Australian merino wool. Ribbed collar and wooden horn buttons.'
+  },
+  {
+    id: 'yarn-002',
+    title: 'Botanical Daisy Crochet Tote Bag',
+    category: 'Accessories',
+    fiber: 'Organic Combed Cotton Yarn',
+    price: 1850,
+    stock: 12,
+    imageUrl: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=700&q=80',
+    description: 'Sturdy structured crochet shopper featuring hand-stitched floral granny squares and reinforced double-knit handles.'
+  },
+  {
+    id: 'yarn-003',
+    title: 'Alpaca Cloud Waffle Throw Blanket',
+    category: 'Home Decor',
+    fiber: 'Baby Alpaca & Silk Blend',
+    price: 5200,
+    stock: 4,
+    imageUrl: 'https://images.unsplash.com/photo-1580301762395-21ce84d00bc6?auto=format&fit=crop&w=700&q=80',
+    description: 'Hypoallergenic waffle stitch throw blanket with artisanal fringed edges. Incredibly warm yet featherlight.'
+  },
+  {
+    id: 'yarn-004',
+    title: 'Blush Rose Hand-Spun Cable Beanie',
+    category: 'Wearables',
+    fiber: 'Hand-dyed Mulberry Silk & Wool',
+    price: 1200,
+    stock: 15,
+    imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=700&q=80',
+    description: 'Classic honeycomb cable-twist beanie with detachable faux-fur pompom. Fitted with snug seamless ribbing.'
+  },
+  {
+    id: 'yarn-005',
+    title: 'Forest Faun Amigurumi Plushie',
+    category: 'Plushies',
+    fiber: 'Safety Cotton Chenille Velvet Yarn',
+    price: 1450,
+    stock: 8,
+    imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=700&q=80',
+    description: 'Adorably snug hand-crocheted faun with embroidered child-safe features and hypoallergenic cluster fiberfill.'
+  },
+  {
+    id: 'yarn-006',
+    title: 'Macrame & Chunky Wool Wall Tapestry',
+    category: 'Home Decor',
+    fiber: 'Raw Natural Wool Roving & Cotton',
+    price: 2900,
+    stock: 5,
+    imageUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=80',
+    description: 'Textured statement wall hanging mounted on reclaimed natural driftwood with hand-brushed tassels.'
+  }
+];
+
+const INITIAL_ADMINS = [
+  {
+    id: 'adm-1',
+    name: 'Eleanor Vance',
+    email: 'admin@neovo.craft',
+    role: 'Master Admin',
+    assignedDate: '2026-01-10',
+    canManageAdmins: true,
+    canEditProducts: true,
+    canViewAccounting: true,
+    status: 'Active'
+  },
+  {
+    id: 'adm-2',
+    name: 'Siddharth Rao',
+    email: 'accounts@neovo.craft',
+    role: 'Financial Officer',
+    assignedDate: '2026-03-15',
+    canManageAdmins: false,
+    canEditProducts: false,
+    canViewAccounting: true,
+    status: 'Active'
+  }
+];
+
+const INITIAL_TRANSACTIONS = [
+  {
+    id: 'ORD-9021',
+    itemName: 'Merino Wool Chunky Knit Cardigan',
+    customerName: 'Aarav Patel',
+    price: 3490,
+    acceptedDate: '2026-10-04',
+    returnedDate: '',
+    status: 'Completed',
+    notes: 'Gift wrapped with silk ribbon'
+  },
+  {
+    id: 'ORD-9022',
+    itemName: 'Botanical Daisy Crochet Tote Bag',
+    customerName: 'Meera Sen',
+    price: 1850,
+    acceptedDate: '2026-10-08',
+    returnedDate: '',
+    status: 'Completed',
+    notes: 'Custom mustard inner lining requested'
+  },
+  {
+    id: 'ORD-9023',
+    itemName: 'Alpaca Cloud Waffle Throw Blanket',
+    customerName: 'Kavita Nair',
+    price: 5200,
+    acceptedDate: '2026-10-12',
+    returnedDate: '2026-10-18',
+    status: 'Returned',
+    notes: 'Customer opted for darker colorway'
+  },
+  {
+    id: 'ORD-9024',
+    itemName: 'Blush Rose Hand-Spun Cable Beanie',
+    customerName: 'Zoya Khan',
+    price: 1200,
+    acceptedDate: '2026-10-22',
+    returnedDate: '',
+    status: 'Completed',
+    notes: 'Pre-ordered batch #2'
+  },
+  {
+    id: 'ORD-9025',
+    itemName: 'Forest Faun Amigurumi Plushie',
+    customerName: 'Rohan Deshmukh',
+    price: 1450,
+    acceptedDate: '2026-10-25',
+    returnedDate: '',
+    status: 'Completed',
+    notes: 'First time buyer'
+  },
+  {
+    id: 'ORD-8910',
+    itemName: 'Botanical Daisy Crochet Tote Bag',
+    customerName: 'Ananya Sharma',
+    price: 1850,
+    acceptedDate: '2026-09-14',
+    returnedDate: '',
+    status: 'Completed',
+    notes: 'September standard order'
+  },
+  {
+    id: 'ORD-8911',
+    itemName: 'Merino Wool Chunky Knit Cardigan',
+    customerName: 'David Miller',
+    price: 3490,
+    acceptedDate: '2026-09-20',
+    returnedDate: '2026-09-27',
+    status: 'Returned',
+    notes: 'Size alteration request'
+  }
+];
+
+export default function App() {
+  // --- APPLICATION STATE ---
+  const [view, setView] = useState('store'); // 'store' | 'admin'
+  const [adminSubTab, setAdminSubTab] = useState('accounting'); // 'accounting' | 'items' | 'admins'
+  
+  // Storage states with fallbacks
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem('neovo_products');
+    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+  });
+
+  const [admins, setAdmins] = useState(() => {
+    const saved = localStorage.getItem('neovo_admins');
+    return saved ? JSON.parse(saved) : INITIAL_ADMINS;
+  });
+
+  const [transactions, setTransactions] = useState(() => {
+    const saved = localStorage.getItem('neovo_transactions');
+    return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+  });
+
+  // Auth States
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [loginStep, setLoginStep] = useState(1); // 1: Email/Password, 2: 2-Step OTP Verification
+  const [loginEmail, setLoginEmail] = useState('admin@neovo.craft');
+  const [loginPassword, setLoginPassword] = useState('neovo2026');
+  const [otpCode, setOtpCode] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('7492');
+  const [authError, setAuthError] = useState('');
+
+  // Storefront Category & Search filter
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [storeSearch, setStoreSearch] = useState('');
+  const [selectedProductModal, setSelectedProductModal] = useState(null);
+
+  // Accounting Ledger Filters & Form
+  const [selectedMonth, setSelectedMonth] = useState('2026-10');
+  const [statusFilter, setStatusFilter] = useState('All');
+  
+  // New Transaction Form State
+  const [newOrder, setNewOrder] = useState({
+    itemName: '',
+    customerName: '',
+    price: '',
+    acceptedDate: new Date().toISOString().split('T')[0],
+    returnedDate: '',
+    status: 'Completed',
+    notes: ''
+  });
+
+  // New Item Form State
+  const [newItem, setNewItem] = useState({
+    title: '',
+    category: 'Wearables',
+    fiber: '',
+    price: '',
+    stock: '',
+    imageUrl: '',
+    description: ''
+  });
+
+  // New Admin Form State
+  const [newAdminForm, setNewAdminForm] = useState({
+    name: '',
+    email: '',
+    role: 'Shop Manager',
+    canManageAdmins: false,
+    canEditProducts: true,
+    canViewAccounting: true
+  });
+
+  // Quick feedback toast / message
+  const [notice, setNotice] = useState('');
+
+  // Sync with LocalStorage
+  useEffect(() => {
+    localStorage.setItem('neovo_products', JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem('neovo_admins', JSON.stringify(admins));
+  }, [admins]);
+
+  useEffect(() => {
+    localStorage.setItem('neovo_transactions', JSON.stringify(transactions));
+  }, [transactions]);
+
+  const showNotification = (msg) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(''), 3500);
+  };
+
+  // --- AUTHENTICATION HANDLERS ---
+  const handleInitiateLogin = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    const matchedAdmin = admins.find(a => a.email.toLowerCase() === loginEmail.toLowerCase().trim());
+    
+    if (!matchedAdmin) {
+      setAuthError('No active admin found with this email address.');
+      return;
+    }
+    if (matchedAdmin.status !== 'Active') {
+      setAuthError('This admin account has been deactivated. Contact Master Admin.');
+      return;
+    }
+
+    // Generate random 4-digit code for 2-step verification simulation
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedOtp(code);
+    setLoginStep(2);
+  };
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    if (otpCode.trim() === generatedOtp || otpCode.trim() === '0000') {
+      const admin = admins.find(a => a.email.toLowerCase() === loginEmail.toLowerCase().trim());
+      setCurrentAdmin(admin);
+      setIsAuthenticated(true);
+      setLoginStep(1);
+      setOtpCode('');
+      showNotification(`Welcome back, ${admin.name}!`);
+    } else {
+      setAuthError('Invalid 2-step verification code. Please check and retry.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentAdmin(null);
+    setLoginStep(1);
+    showNotification('Logged out successfully from NEOVO Admin Suite.');
+  };
+
+  // --- ITEM MANAGEMENT HANDLERS ---
+  const handleCreateProduct = (e) => {
+    e.preventDefault();
+    if (!newItem.title || !newItem.price) {
+      showNotification('Please fill out product title and price.');
+      return;
+    }
+
+    const created = {
+      id: `yarn-${Date.now().toString().slice(-4)}`,
+      title: newItem.title,
+      category: newItem.category,
+      fiber: newItem.fiber || '100% Handcrafted Artisan Yarn',
+      price: parseFloat(newItem.price) || 0,
+      stock: parseInt(newItem.stock, 10) || 1,
+      imageUrl: newItem.imageUrl || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=700&q=80',
+      description: newItem.description || 'Finely crocheted artisan creation made with premium organic yarn.'
+    };
+
+    setProducts([created, ...products]);
+    setNewItem({
+      title: '',
+      category: 'Wearables',
+      fiber: '',
+      price: '',
+      stock: '',
+      imageUrl: '',
+      description: ''
+    });
+    showNotification(`New yarn item "${created.title}" published!`);
+  };
+
+  const handleDeleteProduct = (id) => {
+    setProducts(products.filter(p => p.id !== id));
+    showNotification('Item removed from inventory catalogue.');
+  };
+
+  const handleStockUpdate = (id, delta) => {
+    setProducts(products.map(p => {
+      if (p.id === id) {
+        const nextStock = Math.max(0, p.stock + delta);
+        return { ...p, stock: nextStock };
+      }
+      return p;
+    }));
+  };
+
+  // --- ACCOUNTING LEDGER HANDLERS ---
+  const handleAddTransaction = (e) => {
+    e.preventDefault();
+    if (!newOrder.itemName || !newOrder.price || !newOrder.acceptedDate) {
+      showNotification('Please supply item name, price, and accepted date.');
+      return;
+    }
+
+    const entry = {
+      id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+      itemName: newOrder.itemName,
+      customerName: newOrder.customerName || 'Direct Customer',
+      price: parseFloat(newOrder.price) || 0,
+      acceptedDate: newOrder.acceptedDate,
+      returnedDate: newOrder.status === 'Returned' ? (newOrder.returnedDate || newOrder.acceptedDate) : '',
+      status: newOrder.status,
+      notes: newOrder.notes || 'Recorded via accounting panel'
+    };
+
+    setTransactions([entry, ...transactions]);
+    setNewOrder({
+      itemName: '',
+      customerName: '',
+      price: '',
+      acceptedDate: new Date().toISOString().split('T')[0],
+      returnedDate: '',
+      status: 'Completed',
+      notes: ''
+    });
+    showNotification(`Transaction record #${entry.id} saved to ledger.`);
+  };
+
+  const handleToggleReturnStatus = (txId) => {
+    setTransactions(transactions.map(t => {
+      if (t.id === txId) {
+        const isNowReturned = t.status !== 'Returned';
+        return {
+          ...t,
+          status: isNowReturned ? 'Returned' : 'Completed',
+          returnedDate: isNowReturned ? new Date().toISOString().split('T')[0] : ''
+        };
+      }
+      return t;
+    }));
+    showNotification(`Order ${txId} status adjusted.`);
+  };
+
+  const handleDeleteTransaction = (id) => {
+    setTransactions(transactions.filter(t => t.id !== id));
+    showNotification(`Transaction ${id} deleted.`);
+  };
+
+  // --- ADMIN ASSIGNMENT HANDLERS ---
+  const handleCreateAdmin = (e) => {
+    e.preventDefault();
+    if (!newAdminForm.name || !newAdminForm.email) {
+      showNotification('Please provide admin name and email.');
+      return;
+    }
+    if (admins.some(a => a.email.toLowerCase() === newAdminForm.email.toLowerCase())) {
+      showNotification('An admin with this email is already registered.');
+      return;
+    }
+
+    const brandNewAdmin = {
+      id: `adm-${Date.now().toString().slice(-4)}`,
+      name: newAdminForm.name,
+      email: newAdminForm.email,
+      role: newAdminForm.role,
+      assignedDate: new Date().toISOString().split('T')[0],
+      canManageAdmins: newAdminForm.canManageAdmins,
+      canEditProducts: newAdminForm.canEditProducts,
+      canViewAccounting: newAdminForm.canViewAccounting,
+      status: 'Active'
+    };
+
+    setAdmins([...admins, brandNewAdmin]);
+    setNewAdminForm({
+      name: '',
+      email: '',
+      role: 'Shop Manager',
+      canManageAdmins: false,
+      canEditProducts: true,
+      canViewAccounting: true
+    });
+    showNotification(`New administrator ${brandNewAdmin.name} authorized!`);
+  };
+
+  const handleToggleAdminStatus = (adminId) => {
+    if (adminId === currentAdmin?.id) {
+      showNotification('You cannot disable your currently active session.');
+      return;
+    }
+    setAdmins(admins.map(a => {
+      if (a.id === adminId) {
+        return { ...a, status: a.status === 'Active' ? 'Suspended' : 'Active' };
+      }
+      return a;
+    }));
+  };
+
+  // --- ACCOUNTING CALCULATIONS FOR MONTHLY REPORT ---
+  const filteredMonthlyTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const monthMatch = t.acceptedDate?.startsWith(selectedMonth);
+      if (!monthMatch) return false;
+      if (statusFilter === 'All') return true;
+      return t.status === statusFilter;
+    });
+  }, [transactions, selectedMonth, statusFilter]);
+
+  const monthlyMetrics = useMemo(() => {
+    const monthlyAll = transactions.filter(t => t.acceptedDate?.startsWith(selectedMonth));
+    let grossEarnings = 0;
+    let refundedAmount = 0;
+    let itemsSold = 0;
+    let itemsReturned = 0;
+
+    monthlyAll.forEach(item => {
+      if (item.status === 'Returned') {
+        refundedAmount += Number(item.price);
+        itemsReturned += 1;
+      } else {
+        grossEarnings += Number(item.price);
+        itemsSold += 1;
+      }
+    });
+
+    const netEarning = grossEarnings; // Net profit realized from successful non-returned sales
+    return {
+      grossEarnings,
+      refundedAmount,
+      netEarning,
+      itemsSold,
+      itemsReturned,
+      totalOrders: monthlyAll.length
+    };
+  }, [transactions, selectedMonth]);
+
+  // Unique list of months found in transactions
+  const availableMonths = useMemo(() => {
+    const set = new Set();
+    transactions.forEach(t => {
+      if (t.acceptedDate && t.acceptedDate.length >= 7) {
+        set.add(t.acceptedDate.substring(0, 7));
+      }
+    });
+    set.add('2026-10');
+    set.add('2026-09');
+    return Array.from(set).sort().reverse();
+  }, [transactions]);
+
+  // Filtered storefront items
+  const displayProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
+      const matchesSearch = p.title.toLowerCase().includes(storeSearch.toLowerCase()) || 
+                            p.fiber.toLowerCase().includes(storeSearch.toLowerCase());
+      return matchesCat && matchesSearch;
+    });
+  }, [products, selectedCategory, storeSearch]);
+
+  return (
+    <div className="min-h-screen bg-[#F5F2EB] text-[#2C352E] font-sans antialiased selection:bg-[#D4C3A3] selection:text-[#2C352E]">
+      
+      {/* Toast Notification */}
+      {notice && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#2C352E] text-[#F5F2EB] px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm border border-[#D4C3A3]/30 animate-bounce">
+          <Sparkles className="w-4 h-4 text-[#D4C3A3]" />
+          <span>{notice}</span>
+        </div>
+      )}
+
+      {/* TOP LUXURY NAVBAR */}
+      <header className="sticky top-0 z-40 bg-[#F5F2EB]/95 backdrop-blur-md border-b border-[#2C352E]/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          {/* Brand Logo with circular seal emblem */}
+          <div 
+            onClick={() => setView('store')}
+            className="flex items-center space-x-3 cursor-pointer group select-none"
+          >
+            {/* SVG Emblem echoing provided NEOVO circular emblem */}
+            <div className="relative w-12 h-12 rounded-full border-2 border-[#2C352E] bg-[#EFECE3] flex items-center justify-center p-1 shadow-sm transition-transform group-hover:scale-105">
+              <svg viewBox="0 0 100 100" className="w-full h-full text-[#2C352E]">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="2.5" />
+                <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
+                {/* Styled N monogram with botanical sprout */}
+                <path 
+                  d="M36 72 V28 C36 28 42 36 50 48 L64 68 V28" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="4" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                />
+                {/* Delicate leaf branch */}
+                <path 
+                  d="M62 38 C68 30 76 29 80 28 C79 34 76 40 70 42 C74 46 76 52 74 56 C68 53 64 47 62 38 Z" 
+                  fill="currentColor" 
+                />
+              </svg>
+            </div>
+            <div>
+              <span className="font-serif tracking-[0.25em] text-2xl font-bold uppercase text-[#2C352E] block">
+                NEOVO
+              </span>
+              <span className="text-[10px] tracking-widest uppercase text-[#2C352E]/60 -mt-1 block font-medium">
+                Artisanal Yarn & Crochet
+              </span>
+            </div>
+          </div>
+
+          {/* Mode Switchers & Auth */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setView('store')}
+              className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full transition-all flex items-center space-x-1.5 ${
+                view === 'store'
+                  ? 'bg-[#2C352E] text-[#F5F2EB] shadow-sm'
+                  : 'bg-white/60 text-[#2C352E] hover:bg-white'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Boutique Catalog</span>
+            </button>
+
+            <button
+              onClick={() => setView('admin')}
+              className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full transition-all flex items-center space-x-1.5 ${
+                view === 'admin'
+                  ? 'bg-[#2C352E] text-[#F5F2EB] shadow-sm'
+                  : 'bg-white/60 text-[#2C352E] hover:bg-white border border-[#2C352E]/15'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Admin & Accounting</span>
+            </button>
+
+            {isAuthenticated && view === 'admin' && (
+              <button
+                onClick={handleLogout}
+                title="Logout admin session"
+                className="p-2 text-[#2C352E]/70 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors ml-1"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* 1. PUBLIC STOREFRONT VIEW */}
+      {/* ========================================================================= */}
+      {view === 'store' && (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+          
+          {/* Hero Banner */}
+          <section className="relative overflow-hidden rounded-3xl bg-[#2C352E] text-[#F5F2EB] p-8 md:p-14 shadow-xl">
+            <div className="relative z-10 max-w-2xl space-y-4">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4C3A3]/20 border border-[#D4C3A3]/30 text-xs tracking-widest uppercase text-[#D4C3A3]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Pure Fiber Craftsmanship</span>
+              </div>
+              <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight leading-tight">
+                Slow Crafted Yarn Elegance for Modern Living.
+              </h1>
+              <p className="text-sm sm:text-base text-[#F5F2EB]/80 font-light leading-relaxed">
+                Hand-crocheted and spun with sustainably harvested organic merino, alpaca, and cotton. Designed to bring organic warmth into your wardrobe and home.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-4 text-xs font-medium tracking-wider">
+                <span className="flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-full">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#D4C3A3]" /> 100% Hand Crocheted
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-full">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#D4C3A3]" /> Ethically Sourced Fibers
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-full">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#D4C3A3]" /> Made to Cherish
+                </span>
+              </div>
+            </div>
+
+            {/* Decorative background logo ring watermark */}
+            <div className="absolute -right-12 -bottom-16 w-80 h-80 rounded-full border border-white/10 opacity-30 pointer-events-none flex items-center justify-center">
+              <span className="font-serif text-9xl text-white/5 font-extrabold">N</span>
+            </div>
+          </section>
+
+          {/* Filtering and Search Controls */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2C352E]/10 pb-6">
+            
+            {/* Category pills */}
+            <div className="flex flex-wrap gap-2">
+              {['All', 'Wearables', 'Accessories', 'Home Decor', 'Plushies'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                    selectedCategory === cat
+                      ? 'bg-[#2C352E] text-[#F5F2EB] shadow-sm'
+                      : 'bg-white/70 text-[#2C352E] hover:bg-white border border-[#2C352E]/10'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full md:w-72">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#2C352E]/50" />
+              <input
+                type="text"
+                placeholder="Search yarn, style, fiber..."
+                value={storeSearch}
+                onChange={(e) => setStoreSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs bg-white/80 rounded-full border border-[#2C352E]/15 focus:outline-none focus:ring-1 focus:ring-[#2C352E] text-[#2C352E]"
+              />
+            </div>
+          </div>
+
+          {/* Product Grid */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayProducts.map((product) => (
+              <div 
+                key={product.id}
+                className="group bg-white/70 backdrop-blur-sm rounded-2xl border border-[#2C352E]/10 overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-300"
+              >
+                <div>
+                  {/* Item Image Preview */}
+                  <div className="relative h-64 overflow-hidden bg-[#EAE5D9]">
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <span className="absolute top-3 left-3 bg-[#2C352E]/80 backdrop-blur-md text-[#F5F2EB] text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full">
+                      {product.category}
+                    </span>
+                    <span className={`absolute top-3 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      product.stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                    }`}>
+                      {product.stock > 0 ? `${product.stock} in stock` : 'Sold out'}
+                    </span>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-5 space-y-2">
+                    <p className="text-[11px] font-serif text-[#2C352E]/60 uppercase tracking-widest">
+                      {product.fiber}
+                    </p>
+                    <h3 className="font-serif text-lg font-semibold text-[#2C352E] line-clamp-1 group-hover:text-amber-950 transition-colors">
+                      {product.title}
+                    </h3>
+                    <p className="text-xs text-[#2C352E]/70 line-clamp-2 leading-relaxed">
+                      {product.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer price & action */}
+                <div className="p-5 pt-0 flex items-center justify-between border-t border-[#2C352E]/5 mt-2">
+                  <div>
+                    <span className="text-[10px] text-[#2C352E]/60 uppercase block">Price</span>
+                    <span className="font-serif text-lg font-bold text-[#2C352E]">
+                      ₹{product.price.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedProductModal(product)}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#2C352E] text-[#F5F2EB] hover:bg-[#3D473F] transition-colors flex items-center space-x-1.5"
+                  >
+                    <span>View Details</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </section>
+
+          {displayProducts.length === 0 && (
+            <div className="text-center py-16 bg-white/40 rounded-2xl border border-dashed border-[#2C352E]/20">
+              <Layers className="w-10 h-10 mx-auto text-[#2C352E]/40 mb-3" />
+              <h4 className="font-serif text-base font-medium">No yarn creations match your query</h4>
+              <p className="text-xs text-[#2C352E]/60 mt-1">Try resetting the category filter or searching a different term.</p>
+            </div>
+          )}
+        </main>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. ADMIN PORTAL (LOGIN & SUITE) */}
+      {/* ========================================================================= */}
+      {view === 'admin' && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          
+          {/* A. If not authenticated: 2-Step Login Portal */}
+          {!isAuthenticated ? (
+            <div className="max-w-md mx-auto my-12 bg-white/80 backdrop-blur-md rounded-3xl p-8 border border-[#2C352E]/15 shadow-xl">
+              
+              <div className="text-center space-y-2 mb-6">
+                <div className="w-14 h-14 mx-auto rounded-full bg-[#2C352E] text-[#D4C3A3] flex items-center justify-center shadow-md">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h2 className="font-serif text-2xl font-bold tracking-tight text-[#2C352E]">
+                  NEOVO Administrative Portal
+                </h2>
+                <p className="text-xs text-[#2C352E]/70">
+                  {loginStep === 1 
+                    ? 'Authorized personnel login with credentials'
+                    : 'Step 2: Enter your two-factor verification code'}
+                </p>
+              </div>
+
+              {authError && (
+                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center space-x-2">
+                  <span className="font-bold">Error:</span>
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {/* Step 1: Username & Password */}
+              {loginStep === 1 ? (
+                <form onSubmit={handleInitiateLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-semibold text-[#2C352E]/80 mb-1">
+                      Admin Email
+                    </label>
+                    <input 
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="e.g. admin@neovo.craft"
+                      required
+                      className="w-full px-3.5 py-2.5 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-semibold text-[#2C352E]/80 mb-1">
+                      Password
+                    </label>
+                    <input 
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="w-full px-3.5 py-2.5 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-[#EFECE3] rounded-xl text-[11px] text-[#2C352E]/80">
+                    <span className="font-semibold block mb-0.5">Quick Demo Credential:</span>
+                    Email: <span className="font-mono font-medium">admin@neovo.craft</span> | Any password
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#2C352E] text-[#F5F2EB] text-xs uppercase tracking-wider font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center justify-center space-x-2 shadow"
+                  >
+                    <span>Proceed to Verification</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </form>
+              ) : (
+                /* Step 2: 2-Step OTP Verification */
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                    <p className="font-medium">Verification Code Sent:</p>
+                    <p>Enter the security passcode simulated below to verify login identity.</p>
+                    <div className="pt-1">
+                      <span className="font-mono text-base font-bold tracking-widest bg-white px-2.5 py-1 rounded border border-amber-300 inline-block">
+                        {generatedOtp}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-semibold text-[#2C352E]/80 mb-1">
+                      Enter 4-Digit Code
+                    </label>
+                    <input 
+                      type="text"
+                      maxLength={4}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      placeholder="e.g. 7492"
+                      required
+                      autoFocus
+                      className="w-full px-3.5 py-3 text-center tracking-widest text-lg font-mono bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-2 focus:ring-[#2C352E]"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLoginStep(1)}
+                      className="w-1/3 py-2.5 border border-[#2C352E]/20 text-xs font-semibold rounded-xl hover:bg-white transition-all text-[#2C352E]"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      className="w-2/3 py-2.5 bg-[#2C352E] text-[#F5F2EB] text-xs uppercase tracking-wider font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center justify-center space-x-2 shadow"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-[#D4C3A3]" />
+                      <span>Verify & Enter</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : (
+            
+            /* B. Authenticated Admin Dashboard */
+            <div className="space-y-8">
+              
+              {/* Admin Profile & Navigation Bar */}
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-[#2C352E]/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center space-x-3.5">
+                  <div className="w-11 h-11 rounded-full bg-[#2C352E] text-[#D4C3A3] flex items-center justify-center font-serif text-lg font-bold">
+                    {currentAdmin?.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-serif text-base font-bold text-[#2C352E]">{currentAdmin?.name}</h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EFECE3] border border-[#2C352E]/20 text-[#2C352E] uppercase tracking-wider">
+                        {currentAdmin?.role}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#2C352E]/60">{currentAdmin?.email}</p>
+                  </div>
+                </div>
+
+                {/* Tab Switcher */}
+                <div className="flex items-center gap-1.5 bg-[#EFECE3] p-1.5 rounded-xl self-start md:self-auto border border-[#2C352E]/10">
+                  <button
+                    onClick={() => setAdminSubTab('accounting')}
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-1.5 ${
+                      adminSubTab === 'accounting'
+                        ? 'bg-[#2C352E] text-[#F5F2EB] shadow'
+                        : 'text-[#2C352E] hover:bg-white/60'
+                    }`}
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span>Sales & Accounting</span>
+                  </button>
+
+                  <button
+                    onClick={() => setAdminSubTab('items')}
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-1.5 ${
+                      adminSubTab === 'items'
+                        ? 'bg-[#2C352E] text-[#F5F2EB] shadow'
+                        : 'text-[#2C352E] hover:bg-white/60'
+                    }`}
+                  >
+                    <Package className="w-3.5 h-3.5" />
+                    <span>Manage Yarn Items ({products.length})</span>
+                  </button>
+
+                  <button
+                    onClick={() => setAdminSubTab('admins')}
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-1.5 ${
+                      adminSubTab === 'admins'
+                        ? 'bg-[#2C352E] text-[#F5F2EB] shadow'
+                        : 'text-[#2C352E] hover:bg-white/60'
+                    }`}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Assign Admins ({admins.length})</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* TAB 1: SALES & MONTHLY EARNINGS ACCOUNTING */}
+              {/* ------------------------------------------------------------- */}
+              {adminSubTab === 'accounting' && (
+                <div className="space-y-8">
+                  
+                  {/* Month Selection & Live Metrics */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 p-5 rounded-2xl border border-[#2C352E]/10">
+                    <div>
+                      <h3 className="font-serif text-lg font-bold">Monthly Financial Overview</h3>
+                      <p className="text-xs text-[#2C352E]/60">
+                        Tracks item orders, accepted shipping date, returns & net monthly earnings.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <span className="text-xs font-semibold text-[#2C352E]/70 uppercase tracking-wider flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Report Month:
+                      </span>
+                      <select
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg border border-[#2C352E]/20 text-[#2C352E] focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                      >
+                        {availableMonths.map((m) => (
+                          <option key={m} value={m}>
+                            {new Date(m + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Summary Metric Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white/80 p-5 rounded-2xl border border-[#2C352E]/10 shadow-sm flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-emerald-800">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Gross Sales</span>
+                        <TrendingUp className="w-4 h-4" />
+                      </div>
+                      <div className="mt-3">
+                        <span className="font-serif text-2xl font-bold text-[#2C352E]">
+                          ₹{(monthlyMetrics.grossEarnings + monthlyMetrics.refundedAmount).toLocaleString('en-IN')}
+                        </span>
+                        <p className="text-[11px] text-[#2C352E]/60 mt-0.5">
+                          Total {monthlyMetrics.totalOrders} order records
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/80 p-5 rounded-2xl border border-[#2C352E]/10 shadow-sm flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-rose-700">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Returns / Deductions</span>
+                        <TrendingDown className="w-4 h-4" />
+                      </div>
+                      <div className="mt-3">
+                        <span className="font-serif text-2xl font-bold text-rose-800">
+                          - ₹{monthlyMetrics.refundedAmount.toLocaleString('en-IN')}
+                        </span>
+                        <p className="text-[11px] text-rose-700/80 mt-0.5">
+                          {monthlyMetrics.itemsReturned} item(s) returned
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#2C352E] text-[#F5F2EB] p-5 rounded-2xl shadow-md flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#D4C3A3]">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Net Monthly Earning</span>
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div className="mt-3">
+                        <span className="font-serif text-2xl font-bold text-[#F5F2EB]">
+                          ₹{monthlyMetrics.netEarning.toLocaleString('en-IN')}
+                        </span>
+                        <p className="text-[11px] text-[#F5F2EB]/70 mt-0.5">
+                          Actual revenue after returns
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/80 p-5 rounded-2xl border border-[#2C352E]/10 shadow-sm flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#2C352E]">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Net Handcrafted Units</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <div className="mt-3">
+                        <span className="font-serif text-2xl font-bold text-[#2C352E]">
+                          {monthlyMetrics.itemsSold} Sold
+                        </span>
+                        <p className="text-[11px] text-[#2C352E]/60 mt-0.5">
+                          Completed successfully
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Transaction Entry Form */}
+                  <div className="bg-white/80 rounded-2xl p-6 border border-[#2C352E]/10 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-serif text-base font-bold text-[#2C352E] flex items-center gap-2">
+                        <PlusCircle className="w-4 h-4 text-[#2C352E]" />
+                        Enter New Yarn Item Sale / Transaction
+                      </h4>
+                      <span className="text-[11px] text-[#2C352E]/60">Direct Ledger Input</span>
+                    </div>
+
+                    <form onSubmit={handleAddTransaction} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                      
+                      {/* Product selector / custom name */}
+                      <div className="lg:col-span-2">
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Item Name *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Chunky Knit Cardigan"
+                          list="product-suggestions"
+                          value={newOrder.itemName}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const matched = products.find(p => p.title.toLowerCase() === val.toLowerCase());
+                            setNewOrder({
+                              ...newOrder,
+                              itemName: val,
+                              price: matched ? matched.price.toString() : newOrder.price
+                            });
+                          }}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                        <datalist id="product-suggestions">
+                          {products.map(p => (
+                            <option key={p.id} value={p.title} />
+                          ))}
+                        </datalist>
+                      </div>
+
+                      {/* Customer / Order Ref */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Buyer / Client
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Buyer Name"
+                          value={newOrder.customerName}
+                          onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      {/* Price */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Price (₹) *
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="3490"
+                          value={newOrder.price}
+                          onChange={(e) => setNewOrder({ ...newOrder, price: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      {/* Accepted Date */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Accepted Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={newOrder.acceptedDate}
+                          onChange={(e) => setNewOrder({ ...newOrder, acceptedDate: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      {/* Status */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Status
+                        </label>
+                        <select
+                          value={newOrder.status}
+                          onChange={(e) => setNewOrder({ 
+                            ...newOrder, 
+                            status: e.target.value,
+                            returnedDate: e.target.value === 'Returned' ? new Date().toISOString().split('T')[0] : ''
+                          })}
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        >
+                          <option value="Completed">Completed</option>
+                          <option value="Returned">Returned</option>
+                        </select>
+                      </div>
+
+                      {/* Optional Returned Date if marked Returned */}
+                      {newOrder.status === 'Returned' && (
+                        <div className="lg:col-span-2">
+                          <label className="block text-[11px] font-semibold text-rose-800 mb-1">
+                            Returned Date
+                          </label>
+                          <input
+                            type="date"
+                            value={newOrder.returnedDate}
+                            onChange={(e) => setNewOrder({ ...newOrder, returnedDate: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-rose-50 rounded-xl border border-rose-300 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                          />
+                        </div>
+                      )}
+
+                      <div className="lg:col-span-6 flex justify-end pt-2">
+                        <button
+                          type="submit"
+                          className="px-6 py-2 bg-[#2C352E] text-[#F5F2EB] text-xs font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center space-x-2"
+                        >
+                          <span>Save Sale Entry</span>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Monthly Ledger Table */}
+                  <div className="bg-white/80 rounded-2xl border border-[#2C352E]/10 overflow-hidden shadow-sm">
+                    <div className="p-4 border-b border-[#2C352E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF8F5]">
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-[#2C352E]">
+                          Transactions for {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </h4>
+                        <p className="text-[11px] text-[#2C352E]/60">
+                          Detailed audit log with accepted & returned date tracking
+                        </p>
+                      </div>
+
+                      {/* Status Quick Filter */}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[11px] text-[#2C352E]/60 uppercase">Filter:</span>
+                        {['All', 'Completed', 'Returned'].map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => setStatusFilter(st)}
+                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                              statusFilter === st
+                                ? 'bg-[#2C352E] text-[#F5F2EB]'
+                                : 'bg-white text-[#2C352E] border border-[#2C352E]/15'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#EFECE3]/70 text-[#2C352E]/80 uppercase tracking-wider text-[10px] border-b border-[#2C352E]/10">
+                          <tr>
+                            <th className="py-3 px-4">Order ID</th>
+                            <th className="py-3 px-4">Item Name</th>
+                            <th className="py-3 px-4">Buyer</th>
+                            <th className="py-3 px-4">Price</th>
+                            <th className="py-3 px-4">Accepted Date</th>
+                            <th className="py-3 px-4">Returned Date</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#2C352E]/10">
+                          {filteredMonthlyTransactions.map((tx) => (
+                            <tr key={tx.id} className="hover:bg-white/60 transition-colors">
+                              <td className="py-3.5 px-4 font-mono font-medium text-[#2C352E]/80">
+                                {tx.id}
+                              </td>
+                              <td className="py-3.5 px-4 font-medium text-[#2C352E]">
+                                {tx.itemName}
+                              </td>
+                              <td className="py-3.5 px-4 text-[#2C352E]/70">
+                                {tx.customerName}
+                              </td>
+                              <td className="py-3.5 px-4 font-serif font-bold text-[#2C352E]">
+                                ₹{Number(tx.price).toLocaleString('en-IN')}
+                              </td>
+                              <td className="py-3.5 px-4 text-[#2C352E]/80">
+                                <span className="inline-flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-[#2C352E]/40" />
+                                  {tx.acceptedDate}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                {tx.returnedDate ? (
+                                  <span className="text-rose-700 font-medium inline-flex items-center gap-1">
+                                    <RotateCcw className="w-3 h-3 text-rose-600" />
+                                    {tx.returnedDate}
+                                  </span>
+                                ) : (
+                                  <span className="text-[#2C352E]/30 italic">—</span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                                  tx.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-rose-100 text-rose-800'
+                                }`}>
+                                  {tx.status}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-right space-x-1">
+                                <button
+                                  onClick={() => handleToggleReturnStatus(tx.id)}
+                                  title={tx.status === 'Completed' ? 'Mark as Returned' : 'Revert to Completed'}
+                                  className="p-1.5 rounded-lg text-[#2C352E]/70 hover:bg-[#EFECE3] hover:text-[#2C352E] transition-colors"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTransaction(tx.id)}
+                                  title="Delete record"
+                                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {filteredMonthlyTransactions.length === 0 && (
+                        <div className="py-12 text-center text-[#2C352E]/50">
+                          <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                          <p className="text-xs">No transaction records found for this period filter.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* TAB 2: MANAGE YARN ITEMS (ADD & INVENTORY) */}
+              {/* ------------------------------------------------------------- */}
+              {adminSubTab === 'items' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  
+                  {/* Left Column: Add Product Form */}
+                  <div className="bg-white/80 rounded-2xl p-6 border border-[#2C352E]/10 shadow-sm space-y-4 h-fit">
+                    <div className="border-b border-[#2C352E]/10 pb-3">
+                      <h4 className="font-serif text-base font-bold text-[#2C352E] flex items-center gap-2">
+                        <Package className="w-4 h-4" />
+                        Add New Yarn Creation
+                      </h4>
+                      <p className="text-xs text-[#2C352E]/60 mt-0.5">
+                        Item will appear instantly in the boutique storefront.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleCreateProduct} className="space-y-3.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Product Title *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Mohair Knit Cocoon Wrap"
+                          value={newItem.title}
+                          onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                            Category
+                          </label>
+                          <select
+                            value={newItem.category}
+                            onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                          >
+                            <option value="Wearables">Wearables</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Home Decor">Home Decor</option>
+                            <option value="Plushies">Plushies</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                            Price (₹) *
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="2200"
+                            value={newItem.price}
+                            onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                            required
+                            className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                            Stock Units
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="10"
+                            value={newItem.stock}
+                            onChange={(e) => setNewItem({ ...newItem, stock: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                            Yarn Fiber Composition
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 70% Mohair, 30% Silk"
+                            value={newItem.fiber}
+                            onChange={(e) => setNewItem({ ...newItem, fiber: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Product Image URL
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://images.unsplash.com/..."
+                          value={newItem.imageUrl}
+                          onChange={(e) => setNewItem({ ...newItem, imageUrl: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Item Description
+                        </label>
+                        <textarea
+                          rows={3}
+                          placeholder="Handcrafted stitch pattern details, sizing, and softness notes..."
+                          value={newItem.description}
+                          onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-[#2C352E] text-[#F5F2EB] text-xs uppercase tracking-wider font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center justify-center space-x-2 shadow"
+                      >
+                        <PlusCircle className="w-3.5 h-3.5" />
+                        <span>Publish Yarn Item</span>
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Right Column: Existing Items List with Quick Stock Adjustment */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="bg-white/80 p-4 rounded-2xl border border-[#2C352E]/10 flex items-center justify-between">
+                      <h4 className="font-serif text-base font-bold text-[#2C352E]">
+                        Active Catalogue ({products.length} Products)
+                      </h4>
+                      <span className="text-xs text-[#2C352E]/60">Adjust stock or remove items</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {products.map((product) => (
+                        <div 
+                          key={product.id}
+                          className="bg-white/80 p-4 rounded-2xl border border-[#2C352E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all"
+                        >
+                          <div className="flex items-center space-x-3.5">
+                            <img 
+                              src={product.imageUrl} 
+                              alt={product.title} 
+                              className="w-16 h-16 rounded-xl object-cover border border-[#2C352E]/10"
+                            />
+                            <div>
+                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#EFECE3] text-[#2C352E]">
+                                {product.category}
+                              </span>
+                              <h5 className="font-serif text-sm font-bold text-[#2C352E] mt-1">
+                                {product.title}
+                              </h5>
+                              <p className="text-[11px] text-[#2C352E]/60">{product.fiber}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#2C352E]/10">
+                            <div>
+                              <span className="text-[10px] text-[#2C352E]/60 uppercase block">Price</span>
+                              <span className="font-serif text-base font-bold text-[#2C352E]">
+                                ₹{product.price.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+
+                            {/* Stock increment/decrement */}
+                            <div className="text-center">
+                              <span className="text-[10px] text-[#2C352E]/60 uppercase block">Stock</span>
+                              <div className="flex items-center space-x-1.5 mt-0.5 bg-[#EFECE3] px-2 py-1 rounded-lg">
+                                <button
+                                  onClick={() => handleStockUpdate(product.id, -1)}
+                                  className="w-5 h-5 flex items-center justify-center font-bold text-xs hover:bg-white rounded"
+                                >
+                                  -
+                                </button>
+                                <span className="font-semibold text-xs min-w-[1.2rem] text-center">
+                                  {product.stock}
+                                </span>
+                                <button
+                                  onClick={() => handleStockUpdate(product.id, 1)}
+                                  className="w-5 h-5 flex items-center justify-center font-bold text-xs hover:bg-white rounded"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                              title="Delete Item"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* TAB 3: ADMIN ASSIGNMENT & ROLE DELEGATION */}
+              {/* ------------------------------------------------------------- */}
+              {adminSubTab === 'admins' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  
+                  {/* Left Column: Assign New Admin Form */}
+                  <div className="bg-white/80 rounded-2xl p-6 border border-[#2C352E]/10 shadow-sm space-y-4 h-fit">
+                    <div className="border-b border-[#2C352E]/10 pb-3">
+                      <h4 className="font-serif text-base font-bold text-[#2C352E] flex items-center gap-2">
+                        <UserPlus className="w-4 h-4" />
+                        Assign New Admin Access
+                      </h4>
+                      <p className="text-xs text-[#2C352E]/60 mt-0.5">
+                        Grant administrative credentials to a team member.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleCreateAdmin} className="space-y-3.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Tara Mehta"
+                          value={newAdminForm.name}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Work Email *
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="e.g. tara@neovo.craft"
+                          value={newAdminForm.email}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none focus:ring-1 focus:ring-[#2C352E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#2C352E]/80 mb-1">
+                          Assigned Role
+                        </label>
+                        <select
+                          value={newAdminForm.role}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-[#2C352E]/20 focus:outline-none"
+                        >
+                          <option value="Shop Manager">Shop Manager (Inventory & Sales)</option>
+                          <option value="Financial Officer">Financial Officer (Accounting only)</option>
+                          <option value="Master Admin">Master Admin (Full Rights)</option>
+                        </select>
+                      </div>
+
+                      <div className="pt-2 border-t border-[#2C352E]/10 space-y-2">
+                        <span className="block text-[11px] font-semibold text-[#2C352E]/80">
+                          Permissions:
+                        </span>
+                        
+                        <label className="flex items-center space-x-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newAdminForm.canEditProducts}
+                            onChange={(e) => setNewAdminForm({ ...newAdminForm, canEditProducts: e.target.checked })}
+                            className="rounded text-[#2C352E]"
+                          />
+                          <span>Can Add & Modify Yarn Items</span>
+                        </label>
+
+                        <label className="flex items-center space-x-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newAdminForm.canViewAccounting}
+                            onChange={(e) => setNewAdminForm({ ...newAdminForm, canViewAccounting: e.target.checked })}
+                            className="rounded text-[#2C352E]"
+                          />
+                          <span>Can Access Accounting & Sales Reports</span>
+                        </label>
+
+                        <label className="flex items-center space-x-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newAdminForm.canManageAdmins}
+                            onChange={(e) => setNewAdminForm({ ...newAdminForm, canManageAdmins: e.target.checked })}
+                            className="rounded text-[#2C352E]"
+                          />
+                          <span>Can Assign Other Admins</span>
+                        </label>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-[#2C352E] text-[#F5F2EB] text-xs uppercase tracking-wider font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center justify-center space-x-2 shadow"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#D4C3A3]" />
+                        <span>Authorize Admin</span>
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Right Column: Active Admins Team List */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="bg-white/80 p-4 rounded-2xl border border-[#2C352E]/10 flex items-center justify-between">
+                      <h4 className="font-serif text-base font-bold text-[#2C352E]">
+                        Authorized Administration Team ({admins.length})
+                      </h4>
+                      <span className="text-xs text-[#2C352E]/60">2-Factor protected accounts</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {admins.map((admin) => (
+                        <div 
+                          key={admin.id}
+                          className="bg-white/80 p-5 rounded-2xl border border-[#2C352E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all"
+                        >
+                          <div className="flex items-start space-x-3.5">
+                            <div className="w-10 h-10 rounded-full bg-[#2C352E] text-[#D4C3A3] flex items-center justify-center font-bold text-sm">
+                              {admin.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <h5 className="font-serif text-sm font-bold text-[#2C352E]">
+                                  {admin.name}
+                                </h5>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EFECE3] text-[#2C352E]">
+                                  {admin.role}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#2C352E]/70">{admin.email}</p>
+                              
+                              <div className="flex flex-wrap gap-2 mt-2 text-[10px] text-[#2C352E]/60">
+                                <span className="bg-[#FAF8F5] px-2 py-0.5 rounded border border-[#2C352E]/10">
+                                  Assigned: {admin.assignedDate}
+                                </span>
+                                {admin.canManageAdmins && (
+                                  <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                                    Can Manage Admins
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-end space-x-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#2C352E]/10">
+                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                              admin.status === 'Active' 
+                                ? 'bg-emerald-100 text-emerald-800' 
+                                : 'bg-rose-100 text-rose-800'
+                            }`}>
+                              {admin.status}
+                            </span>
+
+                            {/* Enable / Disable Admin Access */}
+                            {admin.id !== currentAdmin?.id && (
+                              <button
+                                onClick={() => handleToggleAdminStatus(admin.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                                  admin.status === 'Active'
+                                    ? 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                }`}
+                              >
+                                {admin.status === 'Active' ? 'Revoke Access' : 'Reactivate'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. PRODUCT DETAIL MODAL */}
+      {/* ========================================================================= */}
+      {selectedProductModal && (
+        <div className="fixed inset-0 z-50 bg-[#2C352E]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#FAF8F5] rounded-3xl max-w-xl w-full border border-[#2C352E]/20 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative h-72 bg-[#EAE5D9]">
+              <img 
+                src={selectedProductModal.imageUrl} 
+                alt={selectedProductModal.title}
+                className="w-full h-full object-cover" 
+              />
+              <button
+                onClick={() => setSelectedProductModal(null)}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                ✕
+              </button>
+              <span className="absolute bottom-4 left-4 bg-[#2C352E] text-[#F5F2EB] text-xs font-semibold px-3 py-1 rounded-full">
+                {selectedProductModal.category}
+              </span>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-xs uppercase font-serif tracking-widest text-[#2C352E]/60">
+                  {selectedProductModal.fiber}
+                </p>
+                <h3 className="font-serif text-2xl font-bold text-[#2C352E] mt-1">
+                  {selectedProductModal.title}
+                </h3>
+              </div>
+
+              <p className="text-xs text-[#2C352E]/80 leading-relaxed">
+                {selectedProductModal.description}
+              </p>
+
+              <div className="flex items-center justify-between p-4 bg-white/70 rounded-2xl border border-[#2C352E]/10">
+                <div>
+                  <span className="text-[10px] uppercase text-[#2C352E]/60 block">Price</span>
+                  <span className="font-serif text-2xl font-bold text-[#2C352E]">
+                    ₹{selectedProductModal.price.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase text-[#2C352E]/60 block">Availability</span>
+                  <span className={`text-xs font-bold ${selectedProductModal.stock > 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                    {selectedProductModal.stock > 0 ? `${selectedProductModal.stock} units ready to ship` : 'Made-to-order only'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    showNotification(`Inquiry logged for "${selectedProductModal.title}". Our yarn artisan will contact you!`);
+                    setSelectedProductModal(null);
+                  }}
+                  className="flex-1 py-3 bg-[#2C352E] text-[#F5F2EB] text-xs uppercase tracking-wider font-semibold rounded-xl hover:bg-[#3D473F] transition-all flex items-center justify-center space-x-2"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Reserve Handcrafted Piece</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer className="mt-20 border-t border-[#2C352E]/10 bg-[#EFECE3]/60 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#2C352E]/70">
+          <div className="flex items-center space-x-2">
+            <span className="font-serif font-bold text-sm tracking-widest text-[#2C352E]">NEOVO</span>
+            <span>• Artisanal Yarn Goods & Sustainable Textile Studio</span>
+          </div>
+          <p>© 2026 NEOVO Atelier. All rights reserved.</p>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
